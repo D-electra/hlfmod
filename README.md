@@ -4,7 +4,7 @@ Haxe/HL bindings for FMOD Studio API
 
 ### How to use
 
-Copy files from [redist](https://github.com/D-electra/hlfmod/redist) to your hashlink directory
+Copy files from [redist]([https://github.com/D-electra/hlfmod/redist](https://github.com/D-electra/hlfmod/tree/main/redist)) to your hashlink directory
 
 Here is the usage example:
 
