@@ -1,0 +1,8 @@
+{
+	"name": "hlfmod",
+	"license": "MIT",
+	"releasenote": "base functions",
+	"contributors": ["D-electra"],
+	"version": "0.1.0",
+	"url": "https://github.com/D-electra/hlfmod"
+}
