@@ -36,6 +36,8 @@ enum abstract FmodStudioLoadBankFlags(Int) to Int {
 
 typedef FmodBank = hl.Abstract<'FMOD::Studio::Bank*'>;
 
+typedef FmodEventDescription = hl.Abstract<'FMOD::Studio::EventDescription*'>;
+
 typedef FmodEventInstance = hl.Abstract<'FMOD::Studio::EventInstance*'>;
 
 enum abstract FmodStudioStopMode(Int) to Int {
@@ -58,8 +60,8 @@ class Fmod {
 		return FmodHdll.update();
 	}
 
-	public static function dispose() {
-		return FmodHdll.dispose();
+	public static function release() {
+		return FmodHdll.release();
 	}
 
 	public static function loadBankFile(filename:String, flags:FmodStudioLoadBankFlags = FMOD_STUDIO_LOAD_BANK_NORMAL) {
@@ -70,28 +72,32 @@ class Fmod {
 		return FmodHdll.unloadBank(bank);
 	}
 
-	public static function createEvent(path:String) {
-		return FmodHdll.createEvent(path.toUtf8());
+	public static function getEvent(path:String) {
+		return FmodHdll.getEvent(path.toUtf8());
 	}
 
-	public static function startEvent(event:FmodEventInstance) {
-		return FmodHdll.startEvent(event);
+	public static function createInstance(description:FmodEventDescription) {
+		return FmodHdll.createInstance(description);
 	}
 
-	public static function stopEvent(event:FmodEventInstance, mode:FmodStudioStopMode = FMOD_STUDIO_STOP_IMMEDIATE) {
-		return FmodHdll.stopEvent(event, mode);
+	public static function startInstance(instance:FmodEventInstance) {
+		return FmodHdll.startInstance(instance);
 	}
 
-	public static function setEventPaused(event:FmodEventInstance, paused:Bool) {
-		return FmodHdll.setEventPaused(event, paused);
+	public static function stopInstance(instance:FmodEventInstance, mode:FmodStudioStopMode = FMOD_STUDIO_STOP_IMMEDIATE) {
+		return FmodHdll.stopInstance(instance, mode);
 	}
 
-	public static function getEventPaused(event:FmodEventInstance) {
-		return FmodHdll.getEventPaused(event);
+	public static function setInstancePaused(instance:FmodEventInstance, paused:Bool) {
+		return FmodHdll.setInstancePaused(instance, paused);
 	}
 
-	public static function disposeEvent(event:FmodEventInstance) {
-		return FmodHdll.disposeEvent(event);
+	public static function getInstancePaused(instance:FmodEventInstance) {
+		return FmodHdll.getInstancePaused(instance);
+	}
+
+	public static function releaseInstance(instance:FmodEventInstance) {
+		return FmodHdll.releaseInstance(instance);
 	}
 }
 
@@ -103,24 +109,27 @@ private class FmodHdll {
 	public static function create(maxChannels:Int, studioFlags:Int, flags:Int):Void return;
 	@:hlNative('fmod', 'update')
 	public static function update():Void return;
-	@:hlNative('fmod', 'dispose')
-	public static function dispose():Void return;
+	@:hlNative('fmod', 'release')
+	public static function release():Void return;
 
 	@:hlNative('fmod', 'loadBankFile')
 	public static function loadBankFile(filename:hl.Bytes, flags:Int):FmodBank return null;
 	@:hlNative('fmod', 'unloadBank')
 	public static function unloadBank(bank:FmodBank):Void return;
 
-	@:hlNative('fmod', 'createEvent')
-	public static function createEvent(path:hl.Bytes):FmodEventInstance return null;
-	@:hlNative('fmod', 'startEvent')
-	public static function startEvent(event:FmodEventInstance):Void return;
-	@:hlNative('fmod', 'stopEvent')
-	public static function stopEvent(event:FmodEventInstance, mode:FmodStudioStopMode):Void return;
-	@:hlNative('fmod', 'setEventPaused')
-	public static function setEventPaused(event:FmodEventInstance, paused:Bool):Void return;
-	@:hlNative('fmod', 'getEventPaused')
-	public static function getEventPaused(event:FmodEventInstance):Bool return false;
-	@:hlNative('fmod', 'disposeEvent')
-	public static function disposeEvent(event:FmodEventInstance):Void return;
+	@:hlNative('fmod', 'getEvent')
+	public static function getEvent(path:hl.Bytes):FmodEventDescription return null;
+
+	@:hlNative('fmod', 'createInstance')
+	public static function createInstance(description:FmodEventDescription):FmodEventInstance return null;
+	@:hlNative('fmod', 'startInstance')
+	public static function startInstance(instance:FmodEventInstance):Void return;
+	@:hlNative('fmod', 'stopInstance')
+	public static function stopInstance(instance:FmodEventInstance, mode:FmodStudioStopMode):Void return;
+	@:hlNative('fmod', 'setInstancePaused')
+	public static function setInstancePaused(instance:FmodEventInstance, paused:Bool):Void return;
+	@:hlNative('fmod', 'getInstancePaused')
+	public static function getInstancePaused(instance:FmodEventInstance):Bool return false;
+	@:hlNative('fmod', 'releaseInstance')
+	public static function releaseInstance(instance:FmodEventInstance):Void return;
 }
