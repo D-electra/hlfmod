@@ -4,8 +4,6 @@
 #include "fmod_studio.hpp"
 #include "fmod_errors.h"
 
-#include <map>
-
 void onError(FMOD_RESULT result) {
 	printf("%s\n", FMOD_ErrorString(result));
 }
@@ -37,13 +35,13 @@ HL_PRIM void HL_NAME(update)() {
 }
 DEFINE_PRIM(_VOID, update, _NO_ARG)
 
-HL_PRIM void HL_NAME(dispose)() {
+HL_PRIM void HL_NAME(release)() {
 	FMOD_RESULT result = fmodSystem->release();
 	if (result != FMOD_OK) {
 		onError(result);
 	}
 }
-DEFINE_PRIM(_VOID, dispose, _NO_ARG)
+DEFINE_PRIM(_VOID, release, _NO_ARG)
 
 HL_PRIM FMOD::Studio::Bank* HL_NAME(loadBankFile)(vbyte* filename, int flags) {
 	FMOD::Studio::Bank* bank{};
@@ -64,61 +62,67 @@ HL_PRIM void HL_NAME(unloadBank)(FMOD::Studio::Bank* bank) {
 }
 DEFINE_PRIM(_VOID, unloadBank, _ABSTRACT(FMOD::Studio::Bank*))
 
-HL_PRIM FMOD::Studio::EventInstance* HL_NAME(createEvent)(vbyte* path) {
+HL_PRIM FMOD::Studio::EventDescription* HL_NAME(getEvent)(vbyte* path) {
 	FMOD::Studio::EventDescription* description{};
-	FMOD::Studio::EventInstance* event{};
 
 	FMOD_RESULT result = fmodSystem->getEvent((const char*)path, &description);
 	if (result != FMOD_OK) {
 		onError(result);
 		return nullptr;
 	}
-	result = description->createInstance(&event);
+	return description;
+}
+DEFINE_PRIM(_ABSTRACT(FMOD::Studio::EventDescription*), getEvent, _BYTES)
+
+HL_PRIM FMOD::Studio::EventInstance* HL_NAME(createInstance)(FMOD::Studio::EventDescription* description) {
+	FMOD::Studio::EventInstance* instance;
+
+	FMOD_RESULT result = description->createInstance(&instance);
 	if (result != FMOD_OK) {
 		onError(result);
 		return nullptr;
 	}
-	return event;
+	return instance;
 }
-DEFINE_PRIM(_ABSTRACT(FMOD::Studio::EventInstance*), createEvent, _BYTES)
+DEFINE_PRIM(_ABSTRACT(FMOD::Studio::EventInstance*), createInstance, _ABSTRACT(FMOD::Studio::EventDescription*))
 
-HL_PRIM void HL_NAME(startEvent)(FMOD::Studio::EventInstance* event) {
-	FMOD_RESULT result = event->start();
+HL_PRIM void HL_NAME(startInstance)(FMOD::Studio::EventInstance* instance) {
+	FMOD_RESULT result = instance->start();
 	if (result != FMOD_OK) {
 		onError(result);
 	}
 }
-DEFINE_PRIM(_VOID, startEvent, _ABSTRACT(FMOD::Studio::EventInstance*))
+DEFINE_PRIM(_VOID, startInstance, _ABSTRACT(FMOD::Studio::EventInstance*))
 
-HL_PRIM void HL_NAME(stopEvent)(FMOD::Studio::EventInstance* event, int mode) {
-	FMOD_RESULT result = event->stop((FMOD_STUDIO_STOP_MODE)mode);
+HL_PRIM void HL_NAME(stopInstance)(FMOD::Studio::EventInstance* instance, int mode) {
+	FMOD_RESULT result = instance->stop((FMOD_STUDIO_STOP_MODE)mode);
 }
-DEFINE_PRIM(_VOID, stopEvent, _ABSTRACT(FMOD::Studio::EventInstance*) _I32)
+DEFINE_PRIM(_VOID, stopInstance, _ABSTRACT(FMOD::Studio::EventInstance*) _I32)
 
-HL_PRIM void HL_NAME(setEventPaused)(FMOD::Studio::EventInstance* event, bool paused) {
-	FMOD_RESULT result = event->setPaused(paused);
+HL_PRIM void HL_NAME(setInstancePaused)(FMOD::Studio::EventInstance* instance, bool paused) {
+	FMOD_RESULT result = instance->setPaused(paused);
 	if (result != FMOD_OK) {
 		onError(result);
 	}
 }
-DEFINE_PRIM(_VOID, setEventPaused, _ABSTRACT(FMOD::Studio::EventInstance*) _BOOL)
+DEFINE_PRIM(_VOID, setInstancePaused, _ABSTRACT(FMOD::Studio::EventInstance*) _BOOL)
 
-HL_PRIM bool HL_NAME(getEventPaused)(FMOD::Studio::EventInstance* event) {
+HL_PRIM bool HL_NAME(getInstancePaused)(FMOD::Studio::EventInstance* instance) {
 	bool* paused{};
 	
-	FMOD_RESULT result = event->getPaused(paused);
+	FMOD_RESULT result = instance->getPaused(paused);
 	if (result != FMOD_OK) {
 		onError(result);
 		return false;
 	}
 	return *paused;
 }
-DEFINE_PRIM(_BOOL, getEventPaused, _ABSTRACT(FMOD::Studio::EventInstance*))
+DEFINE_PRIM(_BOOL, getInstancePaused, _ABSTRACT(FMOD::Studio::EventInstance*))
 
-HL_PRIM void HL_NAME(disposeEvent)(FMOD::Studio::EventInstance* event) {
-	FMOD_RESULT result = event->release();
+HL_PRIM void HL_NAME(releaseInstance)(FMOD::Studio::EventInstance* instance) {
+	FMOD_RESULT result = instance->release();
 	if (result != FMOD_OK) {
 		onError(result);
 	}
 }
-DEFINE_PRIM(_VOID, disposeEvent, _ABSTRACT(FMOD::Studio::EventInstance*))
+DEFINE_PRIM(_VOID, releaseInstance, _ABSTRACT(FMOD::Studio::EventInstance*))
