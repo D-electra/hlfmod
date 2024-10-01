@@ -1,6 +1,6 @@
 package fmod;
 
-enum abstract FmodStudioInitFlags(Int) to Int {
+enum abstract FmodStudioInitFlags(Int) from Int to Int {
 	var FMOD_STUDIO_INIT_NORMAL                = 0x00000000;
 	var FMOD_STUDIO_INIT_LIVEUPDATE            = 0x00000001;
 	var FMOD_STUDIO_INIT_ALLOW_MISSING_PLUGINS = 0x00000002;
@@ -10,7 +10,7 @@ enum abstract FmodStudioInitFlags(Int) to Int {
 	var FMOD_STUDIO_INIT_MEMORY_TRACKING       = 0x00000020;
 }
 
-enum abstract FmodInitFlags(Int) to Int {
+enum abstract FmodInitFlags(Int) from Int to Int {
 	var FMOD_INIT_NORMAL                 = 0x00000000;
 	var FMOD_INIT_STREAM_FROM_UPDATE     = 0x00000001;
 	var FMOD_INIT_MIX_FROM_UPDATE        = 0x00000002;
@@ -27,77 +27,106 @@ enum abstract FmodInitFlags(Int) to Int {
 	var FMOD_INIT_MEMORY_TRACKING        = 0x00400000;
 }
 
-enum abstract FmodStudioLoadBankFlags(Int) to Int {
+enum abstract FmodStudioLoadBankFlags(Int) from Int to Int {
 	var FMOD_STUDIO_LOAD_BANK_NORMAL = 0x00000000;
 	var FMOD_STUDIO_LOAD_BANK_NONBLOCKING = 0x00000001;
 	var FMOD_STUDIO_LOAD_BANK_DECOMPRESS_SAMPLES = 0x00000002;
 	var FMOD_STUDIO_LOAD_BANK_UNENCRYPTED = 0x00000004;
 }
 
-typedef FmodBank = hl.Abstract<'FMOD::Studio::Bank*'>;
-
-typedef FmodEventDescription = hl.Abstract<'FMOD::Studio::EventDescription*'>;
-
-typedef FmodEventInstance = hl.Abstract<'FMOD::Studio::EventInstance*'>;
-
-enum abstract FmodStudioStopMode(Int) to Int {
+enum abstract FmodStudioStopMode(Int) from Int to Int {
 	var FMOD_STUDIO_STOP_ALLOWFADEOUT;
 	var FMOD_STUDIO_STOP_IMMEDIATE;
 }
 
-@:access(String)
-class Fmod {
-	public static var version(get, never):Int;
-	@:noCompletion
-	static function get_version() return FmodHdll.version();
+enum abstract FmodStudioPlaybackState(Int) from Int to Int {
+	var FMOD_STUDIO_PLAYBACK_PLAYING;
+	var FMOD_STUDIO_PLAYBACK_SUSTAINING;
+	var FMOD_STUDIO_PLAYBACK_STOPPED;
+	var FMOD_STUDIO_PLAYBACK_STARTING;
+	var FMOD_STUDIO_PLAYBACK_STOPPING;
+}
 
+private typedef FmodBankAbs = hl.Abstract<'FMOD::Studio::Bank*'>;
+abstract FmodBank(FmodBankAbs) from FmodBankAbs to FmodBankAbs {
+	public function unload() {
+		FmodHdll.unloadBank(this);
+	}
+}
+
+private typedef FmodEventDescriptionAbs = hl.Abstract<'FMOD::Studio::EventDescription*'>;
+abstract FmodEventDescription(FmodEventDescriptionAbs) from FmodEventDescriptionAbs to FmodEventDescriptionAbs {
+	public function createInstance():FmodEventInstance {
+		return FmodHdll.createInstance(this);
+	}
+}
+
+private typedef FmodEventInstanceAbs = hl.Abstract<'FMOD::Studio::EventInstance*'>;
+abstract FmodEventInstance(FmodEventInstanceAbs) from FmodEventInstanceAbs to FmodEventInstanceAbs {
+	public function start() {
+		FmodHdll.startInstance(this);
+	}
+
+	public function stop(mode:FmodStudioStopMode) {
+		FmodHdll.stopInstance(this, mode);
+	}
+
+	public function setPaused(paused:Bool) {
+		FmodHdll.setInstancePaused(this, paused);
+	}
+
+	public function getPaused():Bool {
+		return FmodHdll.getInstancePaused(this);
+	}
+
+	public function setTimelinePosition(position:Int) {
+		FmodHdll.setInstanceTimelinePosition(this, position);
+	}
+
+	public function getTimelinePosition():Int {
+		return FmodHdll.getInstanceTimelinePosition(this);
+	}
+
+	public function setPitch(pitch:Float) {
+		FmodHdll.setInstancePitch(this, pitch);
+	}
+
+	public function getPitch():Float {
+		return FmodHdll.getInstancePitch(this);
+	}
+
+	public function getPlaybackState():FmodStudioPlaybackState {
+		return FmodHdll.getInstancePlaybackState(this);
+	}
+
+	public function release() {
+		FmodHdll.releaseInstance(this);
+	}
+}
+
+class Fmod {
+	public static function version():Int {
+		return FmodHdll.version();
+	}
+	
 	public static function create(maxChannels = 36, studioFlags:FmodStudioInitFlags = FMOD_STUDIO_INIT_NORMAL, flags:FmodInitFlags = FMOD_INIT_NORMAL) {
-		if (maxChannels == 0) maxChannels = 36;
-		return FmodHdll.create(maxChannels, studioFlags, flags);
+		FmodHdll.create(maxChannels, studioFlags, flags);
 	}
 
 	public static function update() {
-		return FmodHdll.update();
+		FmodHdll.update();
 	}
 
 	public static function release() {
-		return FmodHdll.release();
+		FmodHdll.release();
 	}
 
-	public static function loadBankFile(filename:String, flags:FmodStudioLoadBankFlags = FMOD_STUDIO_LOAD_BANK_NORMAL) {
-		return FmodHdll.loadBankFile(filename.toUtf8(), flags);
+	public static function loadBankFile(filename:String, flags:FmodStudioLoadBankFlags = FMOD_STUDIO_LOAD_BANK_NORMAL):FmodBank {
+		return FmodHdll.loadBankFile(@:privateAccess filename.toUtf8(), flags);
 	}
 
-	public static function unloadBank(bank:FmodBank) {
-		return FmodHdll.unloadBank(bank);
-	}
-
-	public static function getEvent(path:String) {
-		return FmodHdll.getEvent(path.toUtf8());
-	}
-
-	public static function createInstance(description:FmodEventDescription) {
-		return FmodHdll.createInstance(description);
-	}
-
-	public static function startInstance(instance:FmodEventInstance) {
-		return FmodHdll.startInstance(instance);
-	}
-
-	public static function stopInstance(instance:FmodEventInstance, mode:FmodStudioStopMode = FMOD_STUDIO_STOP_IMMEDIATE) {
-		return FmodHdll.stopInstance(instance, mode);
-	}
-
-	public static function setInstancePaused(instance:FmodEventInstance, paused:Bool) {
-		return FmodHdll.setInstancePaused(instance, paused);
-	}
-
-	public static function getInstancePaused(instance:FmodEventInstance) {
-		return FmodHdll.getInstancePaused(instance);
-	}
-
-	public static function releaseInstance(instance:FmodEventInstance) {
-		return FmodHdll.releaseInstance(instance);
+	public static function getEvent(path:String):FmodEventDescription {
+		return FmodHdll.getEvent(@:privateAccess path.toUtf8());
 	}
 }
 
@@ -113,23 +142,40 @@ private class FmodHdll {
 	public static function release():Void return;
 
 	@:hlNative('fmod', 'loadBankFile')
-	public static function loadBankFile(filename:hl.Bytes, flags:Int):FmodBank return null;
+	public static function loadBankFile(filename:hl.Bytes, flags:Int):FmodBankAbs return null;
 	@:hlNative('fmod', 'unloadBank')
-	public static function unloadBank(bank:FmodBank):Void return;
+	public static function unloadBank(bank:FmodBankAbs):Void return;
 
 	@:hlNative('fmod', 'getEvent')
-	public static function getEvent(path:hl.Bytes):FmodEventDescription return null;
+	public static function getEvent(path:hl.Bytes):FmodEventDescriptionAbs return null;
 
 	@:hlNative('fmod', 'createInstance')
-	public static function createInstance(description:FmodEventDescription):FmodEventInstance return null;
+	public static function createInstance(description:FmodEventDescriptionAbs):FmodEventInstanceAbs return null;
+	
 	@:hlNative('fmod', 'startInstance')
-	public static function startInstance(instance:FmodEventInstance):Void return;
+	public static function startInstance(instance:FmodEventInstanceAbs):Void return;
+	
 	@:hlNative('fmod', 'stopInstance')
-	public static function stopInstance(instance:FmodEventInstance, mode:FmodStudioStopMode):Void return;
+	public static function stopInstance(instance:FmodEventInstanceAbs, mode:Int):Void return;
+	
 	@:hlNative('fmod', 'setInstancePaused')
-	public static function setInstancePaused(instance:FmodEventInstance, paused:Bool):Void return;
+	public static function setInstancePaused(instance:FmodEventInstanceAbs, paused:Bool):Void return;
 	@:hlNative('fmod', 'getInstancePaused')
-	public static function getInstancePaused(instance:FmodEventInstance):Bool return false;
+	public static function getInstancePaused(instance:FmodEventInstanceAbs):Bool return false;
+	
+	@:hlNative('fmod', 'setInstanceTimelinePosition')
+	public static function setInstanceTimelinePosition(instance:FmodEventInstanceAbs, position:Int):Void return;
+	@:hlNative('fmod', 'getInstanceTimelinePosition')
+	public static function getInstanceTimelinePosition(instance:FmodEventInstanceAbs):Int return 0;
+	
+	@:hlNative('fmod', 'setInstancePitch')
+	public static function setInstancePitch(instance:FmodEventInstanceAbs, pitch:hl.F32):Void return;
+	@:hlNative('fmod', 'getInstancePitch')
+	public static function getInstancePitch(instance:FmodEventInstanceAbs):hl.F32 return 0;
+
+	@:hlNative('fmod', 'getInstancePlaybackState')
+	public static function getInstancePlaybackState(instance:FmodEventInstanceAbs):Int return 0;
+	
 	@:hlNative('fmod', 'releaseInstance')
-	public static function releaseInstance(instance:FmodEventInstance):Void return;
+	public static function releaseInstance(instance:FmodEventInstanceAbs):Void return;
 }

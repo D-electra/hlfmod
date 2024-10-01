@@ -8,12 +8,16 @@ void onError(FMOD_RESULT result) {
 	printf("%s\n", FMOD_ErrorString(result));
 }
 
+// info
+
 HL_PRIM int HL_NAME(version)() {
 	return FMOD_VERSION;
 }
 DEFINE_PRIM(_I32, version, _NO_ARG)
 
 FMOD::Studio::System* fmodSystem{};
+
+// system
 
 HL_PRIM void HL_NAME(create)(int maxChannels, int studioFlags, int flags) {
 	FMOD_RESULT result = FMOD::Studio::System::create(&fmodSystem);
@@ -43,6 +47,8 @@ HL_PRIM void HL_NAME(release)() {
 }
 DEFINE_PRIM(_VOID, release, _NO_ARG)
 
+// bank load and unload
+
 HL_PRIM FMOD::Studio::Bank* HL_NAME(loadBankFile)(vbyte* filename, int flags) {
 	FMOD::Studio::Bank* bank{};
 	FMOD_RESULT result = fmodSystem->loadBankFile((const char*)filename, flags, &bank);
@@ -62,6 +68,8 @@ HL_PRIM void HL_NAME(unloadBank)(FMOD::Studio::Bank* bank) {
 }
 DEFINE_PRIM(_VOID, unloadBank, _ABSTRACT(FMOD::Studio::Bank*))
 
+// get event description
+
 HL_PRIM FMOD::Studio::EventDescription* HL_NAME(getEvent)(vbyte* path) {
 	FMOD::Studio::EventDescription* description{};
 
@@ -73,6 +81,8 @@ HL_PRIM FMOD::Studio::EventDescription* HL_NAME(getEvent)(vbyte* path) {
 	return description;
 }
 DEFINE_PRIM(_ABSTRACT(FMOD::Studio::EventDescription*), getEvent, _BYTES)
+
+// create event instance
 
 HL_PRIM FMOD::Studio::EventInstance* HL_NAME(createInstance)(FMOD::Studio::EventDescription* description) {
 	FMOD::Studio::EventInstance* instance;
@@ -86,6 +96,8 @@ HL_PRIM FMOD::Studio::EventInstance* HL_NAME(createInstance)(FMOD::Studio::Event
 }
 DEFINE_PRIM(_ABSTRACT(FMOD::Studio::EventInstance*), createInstance, _ABSTRACT(FMOD::Studio::EventDescription*))
 
+// start event instance
+
 HL_PRIM void HL_NAME(startInstance)(FMOD::Studio::EventInstance* instance) {
 	FMOD_RESULT result = instance->start();
 	if (result != FMOD_OK) {
@@ -94,10 +106,14 @@ HL_PRIM void HL_NAME(startInstance)(FMOD::Studio::EventInstance* instance) {
 }
 DEFINE_PRIM(_VOID, startInstance, _ABSTRACT(FMOD::Studio::EventInstance*))
 
+// stop event instance
+
 HL_PRIM void HL_NAME(stopInstance)(FMOD::Studio::EventInstance* instance, int mode) {
 	FMOD_RESULT result = instance->stop((FMOD_STUDIO_STOP_MODE)mode);
 }
 DEFINE_PRIM(_VOID, stopInstance, _ABSTRACT(FMOD::Studio::EventInstance*) _I32)
+
+// pause event instance
 
 HL_PRIM void HL_NAME(setInstancePaused)(FMOD::Studio::EventInstance* instance, bool paused) {
 	FMOD_RESULT result = instance->setPaused(paused);
@@ -118,6 +134,66 @@ HL_PRIM bool HL_NAME(getInstancePaused)(FMOD::Studio::EventInstance* instance) {
 	return *paused;
 }
 DEFINE_PRIM(_BOOL, getInstancePaused, _ABSTRACT(FMOD::Studio::EventInstance*))
+
+// event instance timeline position
+
+HL_PRIM void HL_NAME(setInstanceTimelinePosition)(FMOD::Studio::EventInstance* instance, int position) {
+	FMOD_RESULT result = instance->setTimelinePosition(position);
+	if (result != FMOD_OK) {
+		onError(result);
+	}
+}
+DEFINE_PRIM(_VOID, setInstanceTimelinePosition, _ABSTRACT(FMOD::Studio::EventInstance*) _I32)
+
+HL_PRIM int HL_NAME(getInstanceTimelinePosition)(FMOD::Studio::EventInstance* instance) {
+	int* position{};
+
+	FMOD_RESULT result = instance->getTimelinePosition(position);
+	if (result != FMOD_OK) {
+		onError(result);
+		return 0;
+	}
+	return *position;
+}
+DEFINE_PRIM(_I32, getInstanceTimelinePosition, _ABSTRACT(FMOD::Studio::EventInstance*))
+
+// event instance pitch
+
+HL_PRIM void HL_NAME(setInstancePitch)(FMOD::Studio::EventInstance* instance, float pitch) {
+	FMOD_RESULT result = instance->setPitch(pitch);
+	if (result != FMOD_OK) {
+		onError(result);
+	}
+}
+DEFINE_PRIM(_VOID, setInstancePitch, _ABSTRACT(FMOD::Studio::EventInstance*) _F32)
+
+HL_PRIM float HL_NAME(getInstancePitch)(FMOD::Studio::EventInstance* instance) {
+	float* pitch{};
+
+	FMOD_RESULT result = instance->getPitch(pitch);
+	if (result != FMOD_OK) {
+		onError(result);
+		return 1;
+	}
+	return *pitch;
+}
+DEFINE_PRIM(_F32, getInstancePitch, _ABSTRACT(FMOD::Studio::EventInstance*))
+
+// event instance playback state
+
+HL_PRIM int HL_NAME(getInstancePlaybackState)(FMOD::Studio::EventInstance* instance) {
+	FMOD_STUDIO_PLAYBACK_STATE* state{};
+	
+	FMOD_RESULT result = instance->getPlaybackState(state);
+	if (result != FMOD_OK) {
+		onError(result);
+		return FMOD_STUDIO_PLAYBACK_STOPPED;
+	}
+	return *state;
+}
+DEFINE_PRIM(_I32, getInstancePlaybackState, _ABSTRACT(FMOD::Studio::EventInstance*))
+
+// release event instance
 
 HL_PRIM void HL_NAME(releaseInstance)(FMOD::Studio::EventInstance* instance) {
 	FMOD_RESULT result = instance->release();
