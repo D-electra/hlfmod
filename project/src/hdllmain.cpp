@@ -5,7 +5,9 @@
 #include "fmod_errors.h"
 
 void onError(FMOD_RESULT result) {
-	printf("%s\n", FMOD_ErrorString(result));
+	hl_buffer* b = hl_alloc_buffer();
+	hl_buffer_cstr(b, FMOD_ErrorString(result));
+	hl_throw_buffer(b);
 }
 
 // info

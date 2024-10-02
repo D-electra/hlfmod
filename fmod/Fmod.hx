@@ -108,7 +108,7 @@ class Fmod {
 	public static function version():Int {
 		return FmodHdll.version();
 	}
-	
+
 	public static function create(maxChannels = 36, studioFlags:FmodStudioInitFlags = FMOD_STUDIO_INIT_NORMAL, flags:FmodInitFlags = FMOD_INIT_NORMAL) {
 		FmodHdll.create(maxChannels, studioFlags, flags);
 	}
@@ -151,23 +151,23 @@ private class FmodHdll {
 
 	@:hlNative('fmod', 'createInstance')
 	public static function createInstance(description:FmodEventDescriptionAbs):FmodEventInstanceAbs return null;
-	
+
 	@:hlNative('fmod', 'startInstance')
 	public static function startInstance(instance:FmodEventInstanceAbs):Void return;
-	
+
 	@:hlNative('fmod', 'stopInstance')
 	public static function stopInstance(instance:FmodEventInstanceAbs, mode:Int):Void return;
-	
+
 	@:hlNative('fmod', 'setInstancePaused')
 	public static function setInstancePaused(instance:FmodEventInstanceAbs, paused:Bool):Void return;
 	@:hlNative('fmod', 'getInstancePaused')
 	public static function getInstancePaused(instance:FmodEventInstanceAbs):Bool return false;
-	
+
 	@:hlNative('fmod', 'setInstanceTimelinePosition')
 	public static function setInstanceTimelinePosition(instance:FmodEventInstanceAbs, position:Int):Void return;
 	@:hlNative('fmod', 'getInstanceTimelinePosition')
 	public static function getInstanceTimelinePosition(instance:FmodEventInstanceAbs):Int return 0;
-	
+
 	@:hlNative('fmod', 'setInstancePitch')
 	public static function setInstancePitch(instance:FmodEventInstanceAbs, pitch:hl.F32):Void return;
 	@:hlNative('fmod', 'getInstancePitch')
@@ -175,7 +175,7 @@ private class FmodHdll {
 
 	@:hlNative('fmod', 'getInstancePlaybackState')
 	public static function getInstancePlaybackState(instance:FmodEventInstanceAbs):Int return 0;
-	
+
 	@:hlNative('fmod', 'releaseInstance')
 	public static function releaseInstance(instance:FmodEventInstanceAbs):Void return;
 }
