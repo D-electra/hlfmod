@@ -71,6 +71,14 @@ abstract FmodEventInstance(FmodEventInstanceAbs) from FmodEventInstanceAbs to Fm
 		FmodHdll.stopInstance(this, mode);
 	}
 
+	public function setVolume(volume:Float) {
+		FmodHdll.setInstanceVolume(this, volume);
+	}
+
+	public function getVolume():Float {
+		return FmodHdll.getInstanceVolume(this);
+	}
+
 	public function setPaused(paused:Bool) {
 		FmodHdll.setInstancePaused(this, paused);
 	}
@@ -157,6 +165,11 @@ private class FmodHdll {
 
 	@:hlNative('fmod', 'stopInstance')
 	public static function stopInstance(instance:FmodEventInstanceAbs, mode:Int):Void return;
+
+	@:hlNative('fmod', 'setInstanceVolume')
+	public static function setInstanceVolume(instance:FmodEventInstanceAbs, volume:hl.F32):Void return;
+	@:hlNative('fmod', 'getInstanceVolume')
+	public static function getInstanceVolume(instance:FmodEventInstanceAbs):hl.F32 return 0;
 
 	@:hlNative('fmod', 'setInstancePaused')
 	public static function setInstancePaused(instance:FmodEventInstanceAbs, paused:Bool):Void return;

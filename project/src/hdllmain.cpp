@@ -112,8 +112,33 @@ DEFINE_PRIM(_VOID, startInstance, _ABSTRACT(FMOD::Studio::EventInstance*))
 
 HL_PRIM void HL_NAME(stopInstance)(FMOD::Studio::EventInstance* instance, int mode) {
 	FMOD_RESULT result = instance->stop((FMOD_STUDIO_STOP_MODE)mode);
+	if (result != FMOD_OK) {
+		onError(result);
+	}
 }
 DEFINE_PRIM(_VOID, stopInstance, _ABSTRACT(FMOD::Studio::EventInstance*) _I32)
+
+// event instance volume
+
+HL_PRIM void HL_NAME(setInstanceVolume)(FMOD::Studio::EventInstance* instance, float volume) {
+	FMOD_RESULT result = instance->setVolume(volume);
+	if (result != FMOD_OK) {
+		onError(result);
+	}
+}
+DEFINE_PRIM(_VOID, setInstanceVolume, _ABSTRACT(FMOD::Studio::EventInstance*) _F32)
+
+HL_PRIM float HL_NAME(getInstanceVolume)(FMOD::Studio::EventInstance* instance) {
+	float* volume{};
+
+	FMOD_RESULT result = instance->getVolume(volume);
+	if (result != FMOD_OK) {
+		onError(result);
+		return 0;
+	}
+	return *volume;
+}
+DEFINE_PRIM(_F32, getInstanceVolume, _ABSTRACT(FMOD::Studio::EventInstance*))
 
 // pause event instance
 
